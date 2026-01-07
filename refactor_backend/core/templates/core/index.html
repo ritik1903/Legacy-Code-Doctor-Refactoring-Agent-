@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Legacy Code Doctor 🩺</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'JetBrains Mono', monospace; background-color: #0f172a; color: #e2e8f0; }
+        textarea { background-color: #1e293b; color: #a5b4fc; border: 1px solid #334155; }
+        textarea:focus { outline: none; border-color: #6366f1; }
+        /* Loader Animation */
+        .loader {
+            border: 4px solid #f3f3f3; border-top: 4px solid #6366f1; border-radius: 50%;
+            width: 30px; height: 30px; animation: spin 1s linear infinite; display: none;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="h-screen flex flex-col p-6">
+
+    <header class="flex justify-between items-center mb-6">
+        <div>
+            <h1 class="text-3xl font-bold text-indigo-400">Legacy Code Doctor 🩺</h1>
+            <p class="text-slate-400 text-sm">Automated Refactoring with Regression Testing</p>
+        </div>
+        <button onclick="refactorCode()" id="runBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded shadow-lg transition font-bold">
+            Run Refactor Agent 🚀
+        </button>
+    </header>
+
+    <div class="flex-1 flex gap-4 h-full">
+        
+        <div class="flex-1 flex flex-col">
+            <label class="mb-2 text-indigo-300 font-bold">⚠️ Legacy Code (Input)</label>
+            <textarea id="legacyInput" class="flex-1 p-4 rounded-lg resize-none text-sm font-mono" placeholder="Paste your messy Python code here..."></textarea>
+        </div>
+
+        <div class="flex flex-col justify-center items-center w-12">
+            <div id="loader" class="loader"></div>
+        </div>
+
+        <div class="flex-1 flex flex-col">
+            <label class="mb-2 text-green-400 font-bold">✨ Refactored Code (Output)</label>
+            <textarea id="refactoredOutput" class="flex-1 p-4 rounded-lg resize-none text-sm font-mono border-green-900 bg-slate-900 text-green-300" readonly placeholder="AI output will appear here..."></textarea>
+        </div>
+
+    </div>
+
+    <script>
+        async function refactorCode() {
+            const input = document.getElementById('legacyInput').value;
+            const output = document.getElementById('refactoredOutput');
+            const loader = document.getElementById('loader');
+            const btn = document.getElementById('runBtn');
+
+            if (!input) { alert("Please enter some code!"); return; }
+
+            // UI Loading State
+            btn.disabled = true;
+            btn.classList.add('opacity-50');
+            loader.style.display = 'block';
+            output.value = "Agent is writing tests and refactoring... (This takes ~15s)";
+
+            try {
+                // Call our API
+                const response = await fetch('/api/refactor/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ code: input })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    output.value = data.refactored_code;
+                } else {
+                    output.value = "Error: " + data.message;
+                }
+            } catch (err) {
+                output.value = "Network Error: " + err;
+            } finally {
+                // Reset UI
+                btn.disabled = false;
+                btn.classList.remove('opacity-50');
+                loader.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>
